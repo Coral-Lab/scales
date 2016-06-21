@@ -4,4 +4,15 @@ This repository contains the gold standards constructed in the LREC 2016 Paper, 
 
 The two directories corrispond to the two tasks discussed in the paper, scale membership elicitation and scale order elicitation. 
 
-Analysis code and MTURK interface to be uploaded shortly.
+The analysis code has the following dependencies
+
+- Python
+  - pandas
+  - scikit-learn
+  - numpy
+  - rpy2
+  - hunspell
+- R
+  - psych
+
+MTURK interface to be uploaded shortly.
