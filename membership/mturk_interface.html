@@ -1,0 +1,143 @@
+<!-- Bootstrap v3.0.3 -->
+<style type="text/css">fieldset {
+    padding: 10px;
+    background:#fbfbfb;
+    border-radius:5px;
+    margin-bottom:5px;
+}
+</style>
+<link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet" /><script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script><script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js'></script><script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.string/2.3.3/underscore.string.min.js"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0/js/bootstrap.min.js"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.3.0/bootbox.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/0.5.8/perfect-scrollbar.min.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:700,400" rel="stylesheet" type="text/css" />
+<style type="text/css">body {
+  font-family: 'Open Sans', sans-serif !important;
+  counter-reset: section;
+}
+section h5:before {
+  counter-increment: section;
+  content: counter(section, upper-roman) ". ";
+}
+section h5{
+  font-weight:bold;
+}
+.modal-body{overflow-y: scroll; height:80%;}
+.modal-dialog{width:70%;}
+</style>
+<script id="question-template" type="text/x-handlebars-template">
+{{#each prompts}}
+<fieldset class="col-xs-12">
+<div class="input-group col-xs-12">
+  <label for="data_{{@key}}">{{inc @index}}. What adjectives are like {{this}}?</label>
+  <input class="form-control" id="data_{{@key}}" name="data_{{@key}}"/>
+  <input type="hidden" id="prompt_{{@key}}" name="prompt_{{@key}}" value="{{this}}"/>
+  <input type="hidden" id="pos_{{@key}}" name="pos_{{@key}}" value="{{inc @index}}"/>
+  <input type="hidden" id="t_{{@key}}" name="t_{{@key}}" value=0>
+  <input type="hidden" id="i_{{@key}}" name="i_{{@key}}" value=0>
+ </div>
+ </fieldset>
+{{/each}}
+</script><script type="text/javascript">
+Handlebars.registerHelper("inc", function(value, options)
+{
+    return parseInt(value) + 1;
+});
+	jQuery(document).ready(function(){
+//$('.modal-body').perfectScrollbar();
+data = [
+		{name: "a", part1: ["large","huge","colossal"], part2: ["small","tiny","microscopic"]},
+		{name: "b", part1: ["wet","soaked","moist"], part2: ["dry","arid","thirsty"]},
+		{name: "c", part1: ["smart","clever","intelligent"], part2: ["dumb","stupid","idiotic"]},
+		{name: "d", part1: ["bad","horrible","awful"], part2: ["good","wonderful","excellent"]},
+    {name: "e", part1: ["ancient","old","antique"], part2: ["young","novel","new"]},
+		{name: "f", part1: ["fast","swift","quick"], part2: ["slow","leisurely","glacial"]},
+		{name: "g", part1: ["easy","effortless","painless"], part2: ["hard","difficult","herculean"]},
+		{name: "h", part1: ["few","some"], part2: ["galore","many","several"]},
+		{name: "i", part1: ["dark","dim","dull"], part2: ["bright","brilliant","vivid"]},
+		{name: "j", part1: ["alike","same","similar"], part2: ["different","dissimilar","heterogeneous"]},
+		{name: "k", part1: ["hideous","grotesque","ugly"], part2: ["beautiful","pretty","gorgeous"]},
+		{name: "l", part1: ["circular","round","rotund"], part2: ["concave","convex","polygonal"]},
+		{name: "m", part1: ["hairy","bucktoothed","wrinkled"], part2: ["leggy","slim","bald"]},
+		{name: "n", part1: ["wooden","metallic","plastic"], part2: ["glass","stone","concrete"]},
+		{name: "o", part1: ["acidic","magnetic","supersonic"], part2: ["savory","overpriced","classified"]},
+		{name: "p", part1: ["hot","warm","scorching"], part2: ["cold","cool","freezing"]}
+	   ];
+shuffled = _.shuffle(data);
+prompts = {}
+shuffled.forEach(function(e,i,a){
+	w1 = _.shuffle(e.part1)
+	w2 = _.shuffle(e.part2)
+	word1 = _.first(w1)
+	word2 = _.first(w2)
+	word3 = _.first(_.shuffle(_.without(_.union(e.part1,e.part2),word1,word2)))
+	promptSet = _.str.toSentenceSerial(_.shuffle([word1,word2,word3]));
+	prompts[e.name] = promptSet;
+});
+
+var source   = $("#question-template").html();
+var template = Handlebars.compile(source);
+var t = 0;
+var cur = 0;
+$("#content-placeholder").html(template({prompts: prompts}));
+$('input').focus(function(e){
+  if('performance' in window && 'now' in window.performance){
+    t = window.performance.now();
+  }
+  else{
+    t = e.timeStamp;
+  }
+
+});
+/*$('input').focusin(function(e){
+  t = e.timeStamp;
+});
+$('input').focusout(function(e){
+  id = e.target.id.split('_')[1];
+  $('#t_' + id).val(parseInt($('#t_' + id).val()) + e.timeStamp - t);
+  $('#i_' + id).val(parseInt($('#i_' + id).val()) + 1);
+  t = 0;
+
+});*/
+
+
+$('input').blur(function(e){
+  id = e.target.id.split('_')[1];
+  if('performance' in window && 'now' in window.performance){
+    $('#t_' + id).val(parseFloat($('#t_' + id).val()) + window.performance.now() - t);
+  }
+  else{
+    $('#t_' + id).val(parseInt($('#t_' + id).val()) + e.timeStamp - t);
+  }
+  $('#i_' + id).val(parseInt($('#i_' + id).val()) + 1);
+  t = 0;
+});
+
+bootbox.alert('<div class="consent col-sm-12"> <div> <div class="col-xs-12"> <h4>Whom to Contact about this study:</h4> <div class="col-xs-12 col-sm-6">Principal Investigator:</div> <div class="col-xs-12 col-sm-6"> Bryan Wilkinson</div> <div class="col-xs-12 col-sm-6">Department:</div> <div class="col-xs-12 col-sm-6"> Computer Science and Electrical Engineering</div> <div class="col-xs-12 col-sm-6">Telephone number:</div> <div class="col-xs-2 col-sm-6">410-455-8943 </div> </div> <div class="col-xs-12"> <h3>INFORMED CONSENT FOR PARTICIPATION IN RESEARCH ACTIVITIES</h3> <h4>Title of Protocol</h4> <section class="col-xs-offset-1 col-xs-10"> <h5>INTRODUCTION/PURPOSE:</h5> <p> I am being asked to participate in a research study. The purpose of this study is to investigate the relationship between adjectives in English. I am being asked to volunteer because I am over the age of 18 and speak English. My involvement in this study will begin when I agree to participate and will continue until the end of this 20 minute survey. About 500 persons will be invited to participate. </p> </section> <section class="col-xs-offset-1 col-xs-10"> <h5>PROCEDURES:</h5> <p> As a participant in this study, I will be asked to provide lists of adjectives that I feel relate to the prompt words. My participation in this study will last for approximately 20 minutes</p> </section> <section class="col-xs-offset-1 col-xs-10"> <h5>RISKS AND BENEFITS:</h5> <p> My participation in this study does not involve any significant risks and I have been informed that my participation in this research will not benefit me personally, but will improve understanding of how adjectives work and allow for the creation of a resource for other researchers to use. </p> </section> <section class="col-xs-offset-1 col-xs-10"> <h5>CONFIDENTIALITY:</h5> <p> Any information learned and collected from this study in which I might be identified will remain confidential and will be disclosed ONLY if I give permission. The investigators will attempt to keep my personal information confidential. To help protect my confidentiality, only identification codes will be stored on the data forms. </p> <p> Only the investigator and members of the research team will have access to these records. If information learned from this study is published, I will not be identified by name. By signing this form, however, I allow the research study investigator to make my records available to the University of Maryland Baltimore County (UMBC) Institutional Review Board (IRB) and regulatory agencies as required to do so by law. </p> <p> Consenting to participate in this research also indicates my agreement that all information collected from me individually may be used by current and future researchers in such a fashion that my personal identity will be protected. Such use will include sharing anonymous information with other researchers for checking the accuracy of study findings and for future approved research that has the potential for improving human knowledge. </p> <p> My name will not be included on the surveys and other collected data; a code will be placed on the survey and other collected data; through the use of an identification key, the researcher will be able to link my survey to my identity; and only the researcher will have access to the identification key. </p> </section> <section class="col-xs-offset-1 col-xs-10"> <h5>SPONSOR OF THE RESEARCH:</h5> <p> (Name of external sponsor) is the sponsor of this research study. [If there is no sponsor, delete this section] </p> </section> <section class="col-xs-offset-1 col-xs-10"> <h5>COMPENSATION/COSTS:</h5> <p> My participation in this study will involve no cost to me. I will be paid 50 cents upon completion of this survey. </p> </section> <section class="col-xs-offset-1 col-xs-10"> <h5>CONTACTS AND QUESTIONS: </h5> <p> The principal investigators, Bryan Wilkinson and Tim Oates, have offered to and has answered any and all questions regarding my participation in this research study. If I have any further questions, I can contact Bryan Wilkinson at (410) 455-8943 or <a href="mailto:bryan.wilkinson@umbc.edu">bryan.wilkinson@umbc.edu</a>. </p> <p> If I have any questions about my rights as a participant in this research study, contact the Office for Research Protections and Compliance at (410) 455-2737 or <a href="mailto:compliance@umbc.edu">compliance@umbc.edu</a> </p> </section> <section class="col-xs-offset-1 col-xs-10"> <h5>VOLUNTARY PARTICIPATION </h5> <p> I have been informed that my participation in this research study is voluntary and that I am free to withdraw or discontinue participation at any time. I have been informed that data collected for this study will be retained by the investigator and analyzed even if I choose to withdraw from the research. If I do choose to withdraw, the investigator and I have discussed my withdrawal and the investigator may use my information up to the time I decide to withdraw. If you\'d like to leave the questionaire at any time, just close the window or tab. </p> </section> <h6 class="col-xs-offset-1 col-xs-10 text-danger">IRB Protocol Y15TO37140 approved for use 03/23/2015 - 03/22/2016</h6></div> </div>');
+});
+
+</script>
+<section class="container-fluid" id="Other" style="margin-bottom:15px; padding: 10px 10px; color:#333333;">
+<div class="col-xs-12 col-md-12"><!-- Instructions -->
+<div class="panel panel-primary">
+<div class="panel-heading"><strong>Instructions</strong></div>
+
+<div class="panel-body">
+<ul>
+	<li>For the given set of prompt words, write down as many other adjectives that you can think of that are related to the entire set.</li>
+	<li>Separate each word in your answer with a comma, for example:
+	<ul>
+		<li>free, popular, available <strong>is correct</strong></li>
+		<li>free popular available <strong>is not correct</strong></li>
+	</ul>
+	</li>
+	<li>Please do not consult external sources, including but not limited to dictionaries and thesauruses</li>
+</ul>
+</div>
+</div>
+<!-- End Instructions --><!-- Content Body -->
+
+<section>
+<div id="content-placeholder">&nbsp;</div>
+</section>
+</div>
+</section>
+
