@@ -15,4 +15,3 @@ The analysis code has the following dependencies
 - R
   - psych
 
-MTURK interface to be uploaded shortly.
